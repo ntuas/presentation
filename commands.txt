@@ -1,0 +1,8 @@
+docker run --net uasnt_default -e SPRING_CLOUD_CONSUL_HOST=consul -e SPRING_CLOUD_CONSUL_PORT=8500 --name uasnt_backend_1 dockerregistry.uas.nt.public/nt.uas.backend/backend:0.0.0-11-g80b2b559
+
+docker run --net uasnt_default -e SERVICE_TAGS=traefik.enable=true --name uasnt_inboundgateway_1 dockerregistry.uas.nt.public/nt.uas.inboundgateway/inboundgateway:0.1.0-2-g893b55f2
+docker run --net uasnt_default -e SERVICE_TAGS=traefik.enable=true --name uasnt_inboundgateway_2 dockerregistry.uas.nt.public/nt.uas.inboundgateway/inboundgateway:0.1.0-2-g893b55f2
+
+curl -X POST http://172.18.0.10:8888/putProduct/milk
+curl -X POST http://172.18.0.11:8888/putProduct/cheese
+curl -X POST http://inboundgateway.uas.nt.public/putProduct/water
