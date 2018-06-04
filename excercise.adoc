@@ -1,0 +1,243 @@
+= 12 Factor App Exercise
+
+== Prerequesits
+
+* Heroku account (https://www.heroku.com/) with billing information (https://heroku.com/verify)
+** The credit card will not be charged during this exercise. It is only required to attach backing services to your Apps. After the exercise you can remove your credit card information.
+** If you don't like to provide your credit card information, you can still follow the excercise but you wont't be able to run the apps on your own Heroku account. 
+* Heroku CLI installed (https://devcenter.heroku.com/articles/heroku-cli)
+* Telegram Account (https://telegram.org/)
+* Git and Java 1.8 installed
+
+== Run Fridge on Heroku
+
+=== Clone Fridge Apps from GitHub
+
+* Backend: https://github.com/ntuas/Backend
+* Inbound Gateway: https://github.com/ntuas/InboundGateway
+
+[title=Example]
+----
+> git clone git@github.com:ntuas/Backend.git
+----
+
+=== Build Fridge Apps
+
+* Backend: ./mvnw clean install
+* Inbound Gateway: ./mvnw clean install
+
+=== Create Fridge Apps on Heroku
+
+The following commands must be executed on a terminal.
+
+First, login to the Heroku plattform.
+
+----
+> heroku login
+----
+
+Next, you need to create a Heroku app for each Git repository you previosly clonded from GitHub.
+
+----
+> cd Backend
+> heroku apps:create --region eu --remote heroku-dev ntuas-<someprefix>-backend
+----
+----
+> cd InboundGateway
+> heroku apps:create --region eu --remote heroku-dev ntuas-<someprefix>-inboundgateway
+----
+
+Now, you need to check if a corresponding Heroku git remote has been added for each app.
+
+----
+> cd <App, eg. Backend>
+> git remote -v
+heroku-dev	https://git.heroku.com/ntuas-backend.git (fetch)
+heroku-dev	https://git.heroku.com/ntuas-backend.git (push)
+origin	git@github.com:ntuas/Backend.git (fetch)
+origin	git@github.com:ntuas/Backend.git (push)
+----
+
+Additionally, you can have a look on the Heroku Web Dashboard at https://dashboard.heroku.com/apps to view your currently created apps.
+
+You may have noticed, that the apps on Heroku currently are inactive. The reason for that is that there is no code in the Heroku repository.
+
+So, finally to run the created apps we need to push our code to the Heroku git repository.
+
+----
+> cd Backend
+> git push heroku-dev master
+----
+----
+> cd InboundGateway
+> git push heroku-dev master
+----
+
+After you pushed to Heroku, the platform immediately builds, releases and even runs the app automatically.
+
+Now, if you check the logs with `heroku logs`, you recognize that the application does not start properly.
+The reason for that is, that the required backing services are missing.
+
+=== Attach Backing Services
+
+First, we create and attach a RabbitMQ and MySQL Database to our *Backend App*.
+
+----
+> cd Backend
+> heroku addons:create cloudamqp
+> heroku addons:create cleardb
+----
+
+After you attached the backing services the platform immediately releases and runs the application again.
+You can check this with `heroku releases` command.
+
+----
+> heroku releases
+=== ntuas-backend Releases - Current: v5
+v5  Attach CLEARDB_DATABASE (@ref:cleardb-acute-27913)  2018/06/04 13:18:07 +0200 (~ 53s ago)
+v4  Attach CLOUDAMQP (@ref:cloudamqp-vertical-40114)    2018/06/04 13:17:56 +0200 (~ 1m ago)
+v3  Deploy 7add3ec8                                     2018/06/04 12:46:12 +0200 (~ 32m ago)
+v2  Enable Logplex                                      2018/06/04 12:32:41 +0200 (~ 46m ago)
+v1  Initial release                                     2018/06/04 12:32:41 +0200 (~ 46m ago)
+----
+
+Now, the Backend app should be up and running. You can check that by reviewing the logs of the application (`heroku logs`) or by just opening the app via the heroku dashboard.
+
+To verify that the backend is not only running but also working properly, you can put a message into the `products.manage.queue` via the rabbitMQ-Dashboard:
+
+* Headers
+** action=put
+* Payload
+** <some product you like to put into the fridge>
+
+To enable the communication between the *Inbound Gateway* and the *Backend* you must attach the already created RabbitMQ-addon to the *Inbound Gateway*:
+
+* get the name of the rabbitMQ-addon
+----
+> cd Backend
+> heroku addons
+
+Add-on                                Plan    Price  State  
+────────────────────────────────────  ──────  ─────  ───────
+cleardb (cleardb-acute-27913)         ignite  free   created
+ └─ as CLEARDB_DATABASE
+
+cloudamqp (cloudamqp-vertical-40114)  lemur   free   created
+ └─ as CLOUDAMQP
+----
+
+* attach cloudamqp-addon to InboundGateway
+
+----
+> cd InboundGateway
+> heroku addons:attach cloudamqp-vertical-40114
+----
+
+The HEROKU-Platform now released a new InboundGateway:
+
+----
+> cd InboundGateway
+> heroku releases
+
+=== ntuas-inboundgateway Releases - Current: v4
+v4  Attach CLOUDAMQP (@ref:cloudamqp-vertical-40114)   2018/06/04 13:41:57 +0200 (~ 2m ago)
+v3  Deploy 5d6b1b47                                    2018/06/04 12:49:50 +0200 (~ 54m ago)
+v2  Enable Logplex                                     2018/06/04 12:36:41 +0200 (~ 1h ago)
+v1  Initial release                                    2018/06/04 12:36:41 +0200 (~ 1h ago)
+----
+
+Check, if the InboundGateway responds:
+
+----
+heroku open
+----
+
+will open a browser with the heroku-address of the InboundGateway showing a short documentation of the interface to the app.
+
+----
+curl -X GET https://ntuas-<someprefix>-inboundgateway.herokuapp.com/count
+----
+
+== Integrate Telegram Inbound Gateway
+
+Now, after the basic apps are running and you know how Heroku basically works, you can integrate the telegram inbound gateway by your own. The app is also located on GitHub.
+
+* Inbound Gateway Telegram: https://github.com/ntuas/inboundgateway-telegram
+
+Finally, after you completed this step, you should be able to talk to the fridge via your Telegram account.
+
+=== Telegram Bot Creation
+
+Telegram developer introduction: https://core.telegram.org/bots#botfather
+
+==== Registering a Telegram bot
+First of all, write to `BotFather`. It’s a bot for managing your bots. Yes, there’s a bot for that.
+Send him “/newbot” command and follow his instructions.
+As the result, you’ll have your bot’s token. Keep it safe — it’s a key to Telegram Bot API.
+
+Each bot is given a unique authentication token when it is created.
+The token looks something like 123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11, but we'll use simply <token> in this document instead.
+You can learn about obtaining tokens and generating new ones in link:https://core.telegram.org/bots#botfather[this document].
+
+----
+/newbot
+----
+----
+Alright, a new bot. How are we going to call it? Please choose a name for your bot.
+----
+----
+ntuas-<someprefix>-bot
+----
+----
+Good. Now let's choose a username for your bot. It must end in `bot`. Like this, for example: TerisBot or tetris_bot.
+----
+----
+Ntuas<someprefix>Bot
+----
+----
+Done! Congratulations on your new bot. You will find it at t.me/NtuasBot. You can now add a description, about section and profile picture for your bot, see /help for a list of commands. By the way, when you've finished creating your cool bot, ping our Bot Support if you want a better username for it. Just make sure the bot is fully operational before you do this.
+
+Use this token to access the HTTP API:
+123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11
+
+For a description of the Bot API, see this page: https://core.telegram.org/bots/api
+----
+
+==== Send messages to the bot
+
+Now messages can be written to the bot.
+
+By default, the bot only receives messages starting with a `/`, which indicates that it is a bot command.
+
+[title=ntuas-<someprefix>-bot]
+----
+/hello
+----
+
+The messages, which have been sent to the bot can be queried with the Telegram Api. For a description of the Bot API, see this page: https://core.telegram.org/bots/api
+
+----
+> curl -X GET "https://api.telegram.org/bot<token>/getUpdates"
+{"ok":true,"result":[{"update_id":716198116,
+"message":{"message_id":17,"from":{"id":123456789,"is_bot":false,"first_name":"My","last_name":"Name","username":"myname","language_code":"de"},"chat":{"id":-987654321,"title":"NtuasWorkshop","type":"group","all_members_are_administrators":true},"date":1526141440,"text":"/hello","entities":[{"offset":0,"length":6,"type":"bot_command"}]}}]}
+----
+
+==== Let the bot send messages to your user
+
+The bot can send messages to a group or a user by the chat id.
+
+----
+> curl -X POST "https://api.telegram.org/bot<token>/sendMessage?chat_id=-987654321&text=Hello"
+{"ok":true,"result":{"message_id":18,"from":{"id":345678912,"is_bot":true,"first_name":"ntuas-bot","username":"NtuasBot"},"chat":{"id":-987654321,"title":"NtuasWorkshop","type":"group","all_members_are_administrators":true},"date":1526141739,"text":"Hello"}}
+----
+
+=== Bind Telegram Bot to Telegram Inbound Gateway App
+
+The Telegram inbound gateway requires a configuration for the Telegram bot.
+
+Environment variables are set with the Heroku cli. To act as the telegram bot, the username and the bot token must be set.
+
+----
+> heroku config:set INBOUNDGATEWAY_TELEGRAM_BOT_APIBASEURL=https://api.telegram.org/bot
+> heroku config:set INBOUNDGATEWAY_TELEGRAM_BOT_USERNAME=<bot_username>
+> heroku config:set INBOUNDGATEWAY_TELEGRAM_BOT_TOKEN=<bot_token>
