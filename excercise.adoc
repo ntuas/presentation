@@ -3,13 +3,13 @@
 == Prerequesits
 
 * Heroku account (https://www.heroku.com/) with billing information (https://heroku.com/verify)
-** The credit card will not be charged during this exercise. It is only required to attach backing services to your Apps. After the exercise you can remove your credit card information.
+** The credit card will not be charged during this exercise. It is only required for step 2 to attach the backing services to your Apps. After the exercise you can remove your credit card information.
 ** If you don't like to provide your credit card information, you can still follow the excercise but you wont't be able to run the apps on your own Heroku account. 
 * Heroku CLI installed (https://devcenter.heroku.com/articles/heroku-cli)
 * Telegram Account (https://telegram.org/)
 * Git and Java 1.8 installed
 
-== Run Fridge on Heroku
+== 1. Deploy the Fridge Apps on Heroku
 
 === Clone Fridge Apps from GitHub
 
@@ -36,7 +36,7 @@ First, login to the Heroku plattform.
 > heroku login
 ----
 
-Next, you need to create a Heroku app for each Git repository you previosly clonded from GitHub.
+Next, you need to create a Heroku App for each Git repository you previously cloned from GitHub.
 
 ----
 > cd Backend
@@ -47,22 +47,22 @@ Next, you need to create a Heroku app for each Git repository you previosly clon
 > heroku apps:create --region eu --remote heroku-dev ntuas-<someprefix>-inboundgateway
 ----
 
-Now, you need to check if a corresponding Heroku git remote has been added for each app.
+Now, you need to check if a corresponding Heroku git remote has been added for each App.
 
 ----
 > cd <App, eg. Backend>
 > git remote -v
-heroku-dev	https://git.heroku.com/ntuas-backend.git (fetch)
-heroku-dev	https://git.heroku.com/ntuas-backend.git (push)
+heroku-dev	https://git.heroku.com/ntuas-<someprefix>-backend.git (fetch)
+heroku-dev	https://git.heroku.com/ntuas-<someprefix>-backend.git (push)
 origin	git@github.com:ntuas/Backend.git (fetch)
 origin	git@github.com:ntuas/Backend.git (push)
 ----
 
-Additionally, you can have a look on the Heroku Web Dashboard at https://dashboard.heroku.com/apps to view your currently created apps.
+Additionally, you can have a look on the Heroku Web Dashboard at https://dashboard.heroku.com/apps to view your currently created Apps.
 
 You may have noticed, that the apps on Heroku currently are inactive. The reason for that is that there is no code in the Heroku repository.
 
-So, finally to run the created apps we need to push our code to the Heroku git repository.
+So, finally to *release* and *run* the created Apps you need to push the code to the Heroku git repository.
 
 ----
 > cd Backend
@@ -73,12 +73,14 @@ So, finally to run the created apps we need to push our code to the Heroku git r
 > git push heroku-dev master
 ----
 
-After you pushed to Heroku, the platform immediately builds, releases and even runs the app automatically.
+After you pushed to Heroku, the platform immediately *builds*, *releases* and even *runs* the App automatically.
 
 Now, if you check the logs with `heroku logs`, you recognize that the application does not start properly.
 The reason for that is, that the required backing services are missing.
 
-=== Attach Backing Services
+== 2. Get the Fridge Apps up and running on Heroku
+
+=== Attach and Configure Backing Services
 
 First, we create and attach a RabbitMQ and MySQL Database to our *Backend App*.
 
@@ -158,7 +160,7 @@ will open a browser with the heroku-address of the InboundGateway showing a shor
 curl -X GET https://ntuas-<someprefix>-inboundgateway.herokuapp.com/count
 ----
 
-== Integrate Telegram Inbound Gateway
+== 3. Extend the Frigde System with the Telegram App
 
 Now, after the basic apps are running and you know how Heroku basically works, you can integrate the telegram inbound gateway by your own. The app is also located on GitHub.
 
