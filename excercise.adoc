@@ -96,77 +96,94 @@ You can check this with `heroku releases` command.
 ----
 > heroku releases
 === ntuas-backend Releases - Current: v5
-v5  Attach CLEARDB_DATABASE (@ref:cleardb-acute-27913)  2018/06/04 13:18:07 +0200 (~ 53s ago)
-v4  Attach CLOUDAMQP (@ref:cloudamqp-vertical-40114)    2018/06/04 13:17:56 +0200 (~ 1m ago)
+v5  Attach CLEARDB_DATABASE (@ref:cleardb-strong-74034) 2018/06/04 13:18:07 +0200 (~ 53s ago)
+v4  Attach CLOUDAMQP (@ref:cloudamqp-horizontal-14521)  2018/06/04 13:17:56 +0200 (~ 1m ago)
 v3  Deploy 7add3ec8                                     2018/06/04 12:46:12 +0200 (~ 32m ago)
 v2  Enable Logplex                                      2018/06/04 12:32:41 +0200 (~ 46m ago)
 v1  Initial release                                     2018/06/04 12:32:41 +0200 (~ 46m ago)
 ----
 
-Now, the Backend app should be up and running. You can check that by reviewing the logs of the application (`heroku logs`) or by just opening the app via the heroku dashboard.
+The `heroku addons:create` command also configured the backking services by adding the required variabes to the environment. This can be checked by executing the `heroku config` command.
 
-To verify that the backend is not only running but also working properly, you can put a message into the `products.manage.queue` via the rabbitMQ-Dashboard:
+----
+> heroku config
+=== uats-backend Config Vars
+CLEARDB_DATABASE_TYPE: mysql
+CLEARDB_DATABASE_URL:  mysql://01234abcd:0123456@eu-cdbr-west-02.cleardb.net/heroku_fedcba98?reconnect=true
+CLOUDAMQP_APIKEY:      2e717a5a-fa6e-4e45-9007-e145f6062f54
+CLOUDAMQP_URL:         amqp://ehjothzs:1STxOPD3oaFqfwbbgLbREjU4MIprM9Xp@puma.rmq.cloudamqp.com/ehjothzs
+----
+
+Now, the Backend App should be up and running. You can check that by reviewing the logs of the application (`heroku logs`) or by just opening the App via the Heroku dashboard.
+
+To verify that the backend is not only running but also working properly, you can put a message into the `products.manage.queue` via the RabbitMQ-Dashboard:
 
 * Headers
 ** action=put
 * Payload
 ** <some product you like to put into the fridge>
 
-To enable the communication between the *Inbound Gateway* and the *Backend* you must attach the already created RabbitMQ-addon to the *Inbound Gateway*:
+To enable the communication between the *Inbound Gateway* and the *Backend* you must attach the already created RabbitMQ-Addon to the *Inbound Gateway*:
 
-* get the name of the rabbitMQ-addon
+* Get the name of the RabbitMQ-Addon
 ----
 > cd Backend
 > heroku addons
 
-Add-on                                Plan    Price  State  
-────────────────────────────────────  ──────  ─────  ───────
-cleardb (cleardb-acute-27913)         ignite  free   created
+Add-on                                 Plan    Price  State  
+────────────────────────────────────   ──────  ─────  ───────
+cleardb (cleardb-strong-74034)         ignite  free   created
  └─ as CLEARDB_DATABASE
 
-cloudamqp (cloudamqp-vertical-40114)  lemur   free   created
+cloudamqp (cloudamqp-horizontal-14521) lemur   free   created
  └─ as CLOUDAMQP
 ----
 
-* attach cloudamqp-addon to InboundGateway
+* Attach RabbitMQ-Addon to the InboundGateway App
 
 ----
 > cd InboundGateway
-> heroku addons:attach cloudamqp-vertical-40114
+> heroku addons:attach cloudamqp-horizontal-14521
 ----
 
-The HEROKU-Platform now released a new InboundGateway:
+The Heroku-Platform immediately creates a new InboundGateway release and runs it:
 
 ----
 > cd InboundGateway
 > heroku releases
 
 === ntuas-inboundgateway Releases - Current: v4
-v4  Attach CLOUDAMQP (@ref:cloudamqp-vertical-40114)   2018/06/04 13:41:57 +0200 (~ 2m ago)
+v4  Attach CLOUDAMQP (@ref:cloudamqp-horizontal-14521) 2018/06/04 13:41:57 +0200 (~ 2m ago)
 v3  Deploy 5d6b1b47                                    2018/06/04 12:49:50 +0200 (~ 54m ago)
 v2  Enable Logplex                                     2018/06/04 12:36:41 +0200 (~ 1h ago)
 v1  Initial release                                    2018/06/04 12:36:41 +0200 (~ 1h ago)
 ----
 
-Check, if the InboundGateway responds:
+Check, if the InboundGateway App responds:
 
 ----
-heroku open
+> heroku open
 ----
 
-will open a browser with the heroku-address of the InboundGateway showing a short documentation of the interface to the app.
+will open a browser with the Heroku-Address of the InboundGateway App showing a short documentation of the interface to the app.
 
 ----
-curl -X GET https://ntuas-<someprefix>-inboundgateway.herokuapp.com/count
+> curl -X POST https://ntuas-<someprefix>-inboundgateway.herokuapp.com/putProduct/chocolate
+> curl -X GET https://ntuas-<someprefix>-inboundgateway.herokuapp.com/count
+{"chocolate":1}
 ----
 
 == 3. Extend the Frigde System with the Telegram App
 
-Now, after the basic apps are running and you know how Heroku basically works, you can integrate the telegram inbound gateway by your own. The app is also located on GitHub.
+Now, after the basic Apps are running and you know how Heroku basically works, you can integrate the Telegram inbound gateway by your own. The App is also located on GitHub.
 
 * Inbound Gateway Telegram: https://github.com/ntuas/inboundgateway-telegram
 
 Finally, after you completed this step, you should be able to talk to the fridge via your Telegram account.
+
+----
+Remark: As a build management tool for the Telegram InboundGateway App Gradle is used instead of Maven.
+----
 
 === Telegram Bot Creation
 
@@ -207,7 +224,7 @@ For a description of the Bot API, see this page: https://core.telegram.org/bots/
 
 ==== Send messages to the bot
 
-Now messages can be written to the bot.
+Now messages can be written to the bot via the Telegram App on your mobile phone or the web client.
 
 By default, the bot only receives messages starting with a `/`, which indicates that it is a bot command.
 
@@ -235,9 +252,9 @@ The bot can send messages to a group or a user by the chat id.
 
 === Bind Telegram Bot to Telegram Inbound Gateway App
 
-The Telegram inbound gateway requires a configuration for the Telegram bot.
+The Telegram InboundGateway App requires a configuration for the Telegram bot.
 
-Environment variables are set with the Heroku cli. To act as the telegram bot, the username and the bot token must be set.
+Environment variables are set with the Heroku cli. To act as the Telegram bot, the username and the bot token must be set.
 
 ----
 > heroku config:set INBOUNDGATEWAY_TELEGRAM_BOT_APIBASEURL=https://api.telegram.org/bot
