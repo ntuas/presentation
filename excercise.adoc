@@ -113,10 +113,15 @@ The `heroku addons:create` command also configured the backking services by addi
 ----
 > heroku config
 === uats-backend Config Vars
-CLEARDB_DATABASE_TYPE: mysql
 CLEARDB_DATABASE_URL:  mysql://01234abcd:0123456@eu-cdbr-west-02.cleardb.net/heroku_fedcba98?reconnect=true
 CLOUDAMQP_APIKEY:      2e717a5a-fa6e-4e45-9007-e145f6062f54
 CLOUDAMQP_URL:         amqp://ehjothzs:1STxOPD3oaFqfwbbgLbREjU4MIprM9Xp@puma.rmq.cloudamqp.com/ehjothzs
+----
+
+After the backing services have been added, you need to add an additional environment variable. 
+
+----
+> heroku config:set CLEARDB_DATABASE_TYPE=mysql
 ----
 
 Now, the Backend App should be up and running. You can check that by reviewing the logs of the application (`heroku logs`) or by just opening the App via the Heroku dashboard.
