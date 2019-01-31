@@ -1,5 +1,10 @@
 = 12 Factor App Exercise
 
+[NOTE]
+====
+This page might appear within the Novatec-Confluence. Please don't edit the page directly there but instead generate the confluence-page with the asciidoctor-confluence-tool (https://github.com/asciidoctor/asciidoctor-confluence)
+====
+
 == Prerequesits
 
 * Heroku account (https://www.heroku.com/) with billing information (https://heroku.com/verify)
@@ -260,3 +265,4 @@ Environment variables are set with the Heroku cli. To act as the Telegram bot, t
 > heroku config:set INBOUNDGATEWAY_TELEGRAM_BOT_APIBASEURL=https://api.telegram.org/bot
 > heroku config:set INBOUNDGATEWAY_TELEGRAM_BOT_USERNAME=<bot_username>
 > heroku config:set INBOUNDGATEWAY_TELEGRAM_BOT_TOKEN=<bot_token>
+----
